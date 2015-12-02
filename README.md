@@ -1,14 +1,4 @@
-# Whirl
-
-[![forthebadge](http://forthebadge.com/images/badges/uses-badges.svg)](http://forthebadge.com)
-
-A starting point for creating static websites.
-
-Features:
-* Sass/SCSS
-* Handlebars templating
-* ES6 minification & bundling
-* Live injection/reload with BrowserSync 
+# Whirl [![forthebadge](http://forthebadge.com/images/badges/uses-badges.svg)](http://forthebadge.com)
 
 ### Getting Started
 
@@ -51,8 +41,3 @@ If you are working within a GitHub repo you can deploy your project, at any time
 ```sh
 gulp deploy
 ```
-
-### Credits
-
-- Responsive grid from [Skeleton](http://getskeleton.com) by [Dave Gamache](https://github.com/dhg)
-

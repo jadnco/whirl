@@ -21,7 +21,10 @@ var paths = {
   init: function() {
     this.src.sass        = this.src.root + '/scss/main.scss';
     this.src.templates   = this.src.root + '/**/*.hbs';
-    this.src.javascript  = [this.src.root + '/js/**/*.js', '!' + this.src.root + '/js/libs/*.js'];
+    this.src.js          = [`${this.src.root}/scripts/**/*.js`,
+                            `!${this.src.root}/scripts/**/_*.js`,
+                            `!${this.src.root}/scripts/libs/*.js`, ];
+    this.src._js         = this.src.root + '/scripts/**/_*.js';
     this.src.libs        = this.src.root + '/js/libs/*.js';
     this.src.images      = this.src.root + '/images/**/*.{jpg,jpeg,svg,png,gif}';
     this.src.files       = this.src.root + '/*.{html,txt}';
@@ -84,13 +87,22 @@ gulp.task('templates', () => {
 * Bundle all javascript files
 */
 gulp.task('scripts', () => {
-  gulp.src(paths.src.javascript)
+  gulp.src(paths.src._js)
     .pipe(babel({
       presets: ['es2015'],
     }))
+    .on('error', util.log)
     .pipe(concat('bundle.js'))
     .on('error', util.log)
     .pipe(uglify())
+    .on('error', util.log)
+    .pipe(gulp.dest(paths.dist.javascript))
+    .pipe(browserSync.reload({stream: true}));
+
+  gulp.src(paths.src.js)
+    .pipe(babel({
+      presets: ['es2015'],
+    }))
     .on('error', util.log)
     .pipe(gulp.dest(paths.dist.javascript))
     .pipe(browserSync.reload({stream: true}));
@@ -127,9 +139,17 @@ watch(paths.src.files, () => {
   gulp.start('files');
 });
 
+watch(paths.src._js, () => {
+  gulp.start('scripts');
+});
+
+watch(paths.src.js, () => {
+  gulp.start('scripts');
+});
+
 gulp.task('watch', () => {
   gulp.watch('src/scss/**/*.scss', ['styles']);
-  gulp.watch(paths.src.javascript, ['scripts']);
+  gulp.watch(paths.src.js, ['scripts']);
   gulp.watch(paths.src.templates, ['templates']);
 });
 

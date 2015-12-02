@@ -45,6 +45,15 @@ class Whirl {
     this.canvas.id = 'whirl-slider';
   }
 
+  insertCanvas(size) {
+    this.canvas.width = size.width;
+    this.canvas.height = size.height;
+
+    // Insert canvas right before the drop zone
+    document.body.insertBefore(this.canvas, zone);
+    console.log(`Create canvas with width: ${size.width}, height: ${size.height}`);
+  }
+
   /**
    * [cancel description]
    * @param  {[type]} event [description]
@@ -71,6 +80,7 @@ class Whirl {
 
     let file;
     let reader;
+    let size;
 
     for (let i = 0; i < files.length; i++) {
       file = files[i];
@@ -78,13 +88,15 @@ class Whirl {
 
       reader.readAsDataURL(file);
 
-      reader.addEventListener('loadend', this.loadImage.bind(reader, (image) => {
-        this.insertImage(image);
+      reader.addEventListener('loadend', this.loadImage.bind(reader, (img) => {
+        size = this.insertImage(img);
+
+        // Get the size of the first image
+        // assuming all images are the same size
+        // we don't need to change this
+        i === 0 && this.insertCanvas(size);
       }));
     }
-
-    // Add the canvas to the body
-    document.body.insertBefore(this.canvas, zone);
   }
 
   /**
@@ -100,7 +112,17 @@ class Whirl {
   }
 
   insertImage(image) {
-    this.context.drawImage(image, 0, 0, this.width, 100);
+    let ratio = image.width / image.height;
+
+    let width = this.width;
+    let height = width / ratio;
+
+    this.context.drawImage(image, 0, 0, width, height);
+
+    return {
+      width: width,
+      height: height,
+    };
   }
 
   /**
@@ -118,10 +140,14 @@ class Whirl {
       node.textContent = 'Drag & drop your images';
 
       // Append into the slider element
-      //this.canvas.appendChild(node);
+      this.zone.appendChild(node);
 
       this.splash = node;
     }
+  }
+
+  hideSplash() {
+    this.splash && this.zone.removeChild(this.splash);
   }
 
   /**
@@ -137,7 +163,7 @@ class Whirl {
       node.textContent = 'Loading...';
 
       // Append into the slider element
-      //this.canvas.appendChild(node);
+      this.zone.appendChild(node);
 
       this.loading = node;
     }
@@ -146,7 +172,7 @@ class Whirl {
   hideLoading() {
 
     // If the node exists, remove it
-    //this.canvas.removeChild(this.loading);
+    this.loading && this.zone.removeChild(this.loading);
   }
 
   next() {

@@ -1,3 +1,6 @@
-let slider = document.getElementById('slider');
+let zone = document.getElementById('zone');
 
-let x = new Whirl(slider);
+let whirl = new Whirl(zone);
+
+document.getElementById('total').textContent = whirl.total;
+document.getElementById('current').textContent = whirl.current;

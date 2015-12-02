@@ -1,8 +1,45 @@
-@import 
-  "base/variables",
-  "base/functions",
-  "base/base";
+* {
+  margin: 0;
+  padding: 0;
+}
 
-@import "components/*";
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
 
-@import "pages/**/*";
+#zone {
+  width: 100%;
+  height: 100%;
+  background: #ccc;
+}
+
+#slider {
+  font: 18px/1.6 Work Sans, sans-serif;
+  text-align: center;
+  background: #DEF5FF;
+
+  .whirl-splash {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+  }
+
+  .whirl-loading {
+
+  }
+}
+
+#info {
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+
+  #total,
+  #current {
+    display: inline-block;
+  }
+}

@@ -6,12 +6,9 @@ class Whirl {
    * Sets all property defaults, custom values
    *
    * @param {Object} zone
-   * - The drop zone node element
-   *
-   * @param {Number} width
-   * - Width (in pixels) the images should be displayed at
+   * - The drop zone html element
    */
-  constructor(zone = {}, width = 900) {
+  constructor(zone = {}) {
 
     // Inital values
     this.start = 0;
@@ -27,6 +24,7 @@ class Whirl {
 
     this.canvas = this.createCanvas();
 
+    // Bind methods to the event listeners
     this.canvas.onmousedown = () => this.dragging = true;
     this.canvas.onmouseup = () => this.dragging = false;
     this.canvas.onmousemove = this.changeImage.bind(this);
@@ -52,6 +50,7 @@ class Whirl {
 
     let children = this.zone.children;
 
+    // Check for custom splash and/or loading elments
     if (this.zone.hasChildNodes) {
       for (let i = 0; i < children.length; i++) {
         if (this.zone.children[i].className === this.classes.loading) {
@@ -70,12 +69,24 @@ class Whirl {
     this.showSplash();
   }
 
+  /**
+   * Creat the canvas element
+   *
+   * @return {Object}
+   * - Referece to the canvas element
+   */
   createCanvas() {
     let canvas = this.canvas = document.createElement('canvas');
 
     return canvas;
   }
 
+  /**
+   * Insert the canvas into the DOM
+   *
+   * @param {Object} size
+   * - Width and height to make the canvas
+   */
   insertCanvas(size) {
     this.canvas.width = size.width;
     this.canvas.height = size.height;
@@ -87,9 +98,13 @@ class Whirl {
   }
 
   /**
-   * [cancel description]
-   * @param  {[type]} event [description]
-   * @return {[type]}       [description]
+   * Adds active class to the drop zone
+   * to indicate that files are being dragged over
+   *
+   * @param {Object} event
+   * - Mouse event
+   *
+   * @return {Boolean}
    */
   drag(event) {
     event.preventDefault && event.preventDefault();
@@ -105,6 +120,12 @@ class Whirl {
     return false;
   }
 
+  /**
+   * Reads the dropped files
+   *
+   * @param {Object} event
+   * - mouse event
+   */
   drop(event) {
     event = event || window.event;
 
@@ -115,6 +136,7 @@ class Whirl {
       return alert('You cant add anymore images.');
     }
 
+    // Get the array of files that were dropped in
     let files = event.dataTransfer.files;
 
     let file;
@@ -122,6 +144,8 @@ class Whirl {
 
     this.total = files.length;
 
+    // Make sure the min has been added
+    // Some wierd bugs occur otherwise
     if (this.total < this.min) {
       this.total = 0;
       files = null;
@@ -141,15 +165,23 @@ class Whirl {
 
       reader.readAsDataURL(file);
 
-      reader.onloadend = this.loadImage.bind(this, reader, file, i);
+      reader.onloadend = this.loadImage.bind(this, reader, i);
     }
   }
 
+  /**
+   * Draw the next or previos image
+   *
+   * @param {Object} event
+   * - the mouse event
+   */
   changeImage(event) {
     let left = event.offsetX - event.target.offsetLeft;
     let _current;
 
     if (this.dragging) {
+
+      // Calculate the current position by scaling mouse position
       _current = Math.floor((this.total * left) / this.size.width);
 
       // Only redraw if we need to go to another image
@@ -157,6 +189,8 @@ class Whirl {
         this.current = _current;
 
         if (_current === 0) {
+
+          // No more images to the left
           this.canvas.style.cursor = 'e-resize';
         } else if (_current === this.total - 1) {
           this.canvas.style.cursor = 'w-resize';
@@ -164,11 +198,21 @@ class Whirl {
           this.canvas.style.cursor = 'ew-resize';
         }
 
+        // Draw the new image
         this.context.drawImage(this.images[_current], 0, 0, this.size.width, this.size.height);
       }
     }
   }
 
+  /**
+   * Scale the original image size to defined size
+   *
+   * @param {Object} image
+   * - The original image
+   *
+   * @return {Object}
+   * - The scaled dimensions
+   */
   getScaledSize(image) {
     let ratio = image.width / image.height;
 
@@ -184,15 +228,28 @@ class Whirl {
     };
   }
 
+  /**
+   * Convert the original image
+   * to a scaled version from the canvas
+   *
+   * @return {String}
+   * - The DataURI of the new scaled image
+   */
   getScaledImage() {
     return this.canvas.toDataURL();
   }
 
   /**
-   * [loadImage description]
-   * @return {[type]} [description]
+   * Load the image from the reader
+   * build the images array
+   *
+   * @param {Object} reader
+   * - The reader object which holds the original image
+   *
+   * @param {Integer} index
+   * - Current index relative to all files
    */
-  loadImage(reader, file, index) {
+  loadImage(reader, index) {
     let image = new Image();
     let scaled = new Image();
 
@@ -234,12 +291,21 @@ class Whirl {
     if (image.complete || image.readyState === 4) image.onload();
   }
 
+  /**
+   * Draw the scaled image into the canvas
+   *
+   * @param {Object} image
+   * - The original image
+   */
   insertImage(image) {
     let size = this.getScaledSize(image);
 
     this.context.drawImage(image, 0, 0, size.width, size.height);
   }
 
+  /**
+   * Remove the drop zone from the DOM
+   */
   hideZone() {
     this.zone && document.body.removeChild(this.zone);
   }
@@ -267,6 +333,9 @@ class Whirl {
     this.splash.hidden = false;
   }
 
+  /**
+   * Hide the splash screen
+   */
   hideSplash() {
     this.splash.hidden = true;
   }
@@ -292,16 +361,11 @@ class Whirl {
     }
   }
 
+  /**
+   * Hide the loading screen
+   */
   hideLoading() {
     // If the node exists, remove it
     this.loading.hidden = true;
-  }
-
-  next() {
-    this.current++;
-  }
-
-  previous() {
-    this.current--;
   }
 }

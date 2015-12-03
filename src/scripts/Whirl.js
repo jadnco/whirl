@@ -33,7 +33,6 @@ class Whirl {
 
     // Set values
     this.zone = zone;
-    this.width = width;
 
     this.classes = {
       splash: 'whirl-splash',
@@ -145,7 +144,7 @@ class Whirl {
     this.total = files.length;
 
     // Make sure the min has been added
-    // Some wierd bugs occur otherwise
+    // Some weird bugs occur otherwise
     if (this.total < this.min) {
       this.total = 0;
       files = null;
@@ -365,6 +364,7 @@ class Whirl {
    * Hide the loading screen
    */
   hideLoading() {
+
     // If the node exists, remove it
     this.loading.hidden = true;
   }

@@ -19,6 +19,7 @@ class Whirl {
     this.start = 0;
     this.total = 0;
     this.current = 0;
+    this.added = 0;
     this.min = 5;
     this.dragging = false;
     this.images = {};
@@ -256,6 +257,7 @@ class Whirl {
   loadImage(reader, index) {
     let image = new Image();
     let scaled = new Image();
+    let added;
 
     image.onload = () => {
 
@@ -273,13 +275,12 @@ class Whirl {
 
         this.images[index] = scaled;
 
-        // On the last image
-        if (index === this.total - 1) {
+        added = Object.keys(this.images).length;
+
+        // The last image
+        if (added === this.total) {
           this.canvas.hidden = false;
-
-          // hide the loading screen
           this.hideLoading();
-
           this.hideZone();
         }
 
@@ -349,12 +350,15 @@ class Whirl {
    */
   showLoading() {
     let node;
+    let percentNode;
+
+    let label = `Loading...`;
 
     if (!this.loading) {
       node = document.createElement('div');
 
       node.className = this.classes.loading;
-      node.textContent = 'Loading...';
+      node.textContent = label;
 
       // Append into the slider element
       this.zone.appendChild(node);

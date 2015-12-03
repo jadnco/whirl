@@ -25,7 +25,7 @@ class Whirl {
     this.images = {};
     this.size = {
       width: 0,
-      height: window.outerHeight,
+      height: window.innerHeight,
     };
 
     this.canvas = this.createCanvas();

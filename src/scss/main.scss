@@ -9,19 +9,24 @@ body {
   height: 100%;
 }
 
+#whirl-slider {
+  outline: 1px solid red;
+}
+
 #zone {
   width: 100%;
   height: 100%;
   font: 18px/1.6 Work Sans, sans-serif;
   text-align: center;
   background: #DEF5FF;
+  box-sizing: border-box;
+
+  &.drag-active {
+    border: 5px dashed rgba(black, 0.2);
+  }
 
   .whirl-splash {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    transform: translateY(-50%);
+
   }
 
   .whirl-loading {

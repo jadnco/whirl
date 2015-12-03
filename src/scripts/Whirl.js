@@ -1,3 +1,5 @@
+'use strict';
+
 class Whirl {
 
   /**
@@ -19,8 +21,8 @@ class Whirl {
     this.dragging = false;
     this.images = {};
     this.size = {
-      width: width,
-      height: 0,
+      width: 0,
+      height: window.outerHeight,
     };
 
     this.canvas = this.createCanvas();
@@ -70,7 +72,6 @@ class Whirl {
 
   createCanvas() {
     let canvas = this.canvas = document.createElement('canvas');
-    canvas.id = 'whirl-slider';
 
     return canvas;
   }
@@ -83,7 +84,6 @@ class Whirl {
 
     // Insert canvas right before the drop zone
     document.body.insertBefore(this.canvas, zone);
-    console.log(`Create canvas with width: ${size.width}, height: ${size.height}`);
   }
 
   /**
@@ -150,7 +150,7 @@ class Whirl {
     let _current;
 
     if (this.dragging) {
-      _current = Math.floor((this.total * left) / this.width);
+      _current = Math.floor((this.total * left) / this.size.width);
 
       // Only redraw if we need to go to another image
       if (_current !== this.current) {
@@ -172,8 +172,8 @@ class Whirl {
   getScaledSize(image) {
     let ratio = image.width / image.height;
 
-    let width = this.width;
-    let height = width / ratio;
+    let height = this.size.height;
+    let width = height * ratio;
 
     this.size.width = width;
     this.size.height = height;
@@ -199,7 +199,7 @@ class Whirl {
     image.onload = () => {
 
       // Insert the canvas, based on image dimensions
-      index === 0 && this.insertCanvas(this.getScaledSize(image));
+      this.insertCanvas(this.getScaledSize(image));
 
       // Insert the original image into the canvas context
       this.insertImage(image);

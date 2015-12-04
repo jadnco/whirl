@@ -291,15 +291,6 @@ class Whirl {
   loadImage(reader, index, size) {
     let image = new Image();
     let scaled = new Image();
-    let orientation;
-
-    var binary_string =  window.atob(reader.result);
-    var len = binary_string.length;
-    var bytes = new Uint8Array( len );
-    for (var i = 0; i < len; i++)        {
-        bytes[i] = binary_string.charCodeAt(i);
-    }
-    let buffer = bytes.buffer;
 
     let add = (img, _scaled) => {
       let added;
@@ -329,10 +320,6 @@ class Whirl {
       }
     };
 
-    this.orientation(buffer, (o) => {
-      orientation = o;
-    });
-
     image.onload = () => {
 
       // Insert the canvas
@@ -342,47 +329,6 @@ class Whirl {
 
       // Draw the original image into the canvas context
       this.drawImage(image, this.pos, this.size);
-
-      console.log(orientation);
-
-      switch (orientation) {
-        case 2:
-          // horizontal flip
-          this.context.translate(this.canvas.width, 0);
-          this.context.scale(-1, 1);
-          break;
-        case 3:
-          // 180° rotate left
-          this.context.translate(this.canvas.width, this.canvas.height);
-          this.context.rotate(Math.PI);
-          break;
-        case 4:
-          // vertical flip
-          this.context.translate(0, this.canvas.height);
-          this.context.scale(1, -1);
-          break;
-        case 5:
-          // vertical flip + 90 rotate right
-          this.context.rotate(0.5 * Math.PI);
-          this.context.scale(1, -1);
-          break;
-        case 6:
-          // 90° rotate right
-          this.context.rotate(0.5 * Math.PI);
-          this.context.translate(0, -this.canvas.height);
-          break;
-        case 7:
-          // horizontal flip + 90 rotate right
-          this.context.rotate(0.5 * Math.PI);
-          this.context.translate(this.canvas.width, -this.canvas.height);
-          this.context.scale(-1, 1);
-          break;
-        case 8:
-          // 90° rotate left
-          this.context.rotate(-0.5 * Math.PI);
-          this.context.translate(-this.canvas.width, 0);
-          break;
-      }
 
       // Image is larger than 2MB
       if (size >= 2e6) {
@@ -401,44 +347,6 @@ class Whirl {
     image.src = reader.result;
 
     if (image.complete && image.readyState === 4) image.onload();
-  }
-
-  orientation(result, callback) {
-    let view = new DataView(result);
-    let offset = 2;
-    let length;
-    let marker;
-    let little;
-    let tags;
-
-    if (view.getUint16(0, false) != 0xFFD8) return callback(-2);
-    
-    length = view.byteLength;
-
-    while (offset < length) {
-      marker = view.getUint16(offset, false);
-
-      offset += 2;
-
-      if (marker == 0xFFE1) {
-        little = view.getUint16(offset += 8, false) == 0x4949;
-
-        offset += view.getUint32(offset + 4, little);
-
-        tags = view.getUint16(offset, little);
-
-        offset += 2;
-
-        for (var i = 0; i < tags; i++) {
-          if (view.getUint16(offset + (i * 12), little) == 0x0112) {
-            return callback(view.getUint16(offset + (i * 12) + 8, little));
-          }
-        }
-      } else if ((marker & 0xFF00) != 0xFF00) break;
-      else offset += view.getUint16(offset, false);
-    }
-
-    return callback(-1);
   }
 
   /**

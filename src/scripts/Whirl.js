@@ -24,9 +24,13 @@ class Whirl {
     this.min = 5;
     this.dragging = false;
     this.images = {};
+    this.pos = {
+      x: 0,
+      y: 0,
+    };
     this.size = {
       width: 0,
-      height: window.innerHeight,
+      height: 650,
     };
 
     this.canvas = this.createCanvas();
@@ -82,7 +86,7 @@ class Whirl {
    * - Referece to the canvas element
    */
   createCanvas() {
-    let canvas = this.canvas = document.createElement('canvas');
+    let canvas = document.createElement('canvas');
 
     return canvas;
   }
@@ -94,8 +98,8 @@ class Whirl {
    * - Width and height to make the canvas
    */
   insertCanvas(size) {
-    this.canvas.width = size.width;
-    this.canvas.height = size.height;
+    this.canvas.width = window.innerWidth;//size.width;
+    this.canvas.height = window.innerHeight;//size.height;
     this.canvas.style.cursor = 'ew-resize';
     this.canvas.hidden = true;
 
@@ -180,30 +184,40 @@ class Whirl {
    * - the mouse event
    */
   changeImage(event) {
-    let left = event.offsetX - event.target.offsetLeft;
-    let _current;
+    let left = event.offsetX - this.pos.x;
+    let current;
 
     if (this.dragging) {
 
       // Calculate the current position by scaling mouse position
-      _current = Math.floor((this.total * left) / this.size.width);
+      current = Math.floor((this.total * left) / this.size.width);
+
+      // Cursor is over the left
+      if (current < this.start) {
+        current = this.total + current;
+      }
+
+      // Cursor is over the right
+      else if (current >= this.total) {
+        current = (this.total - current) * -1;
+      }
 
       // Only redraw if we need to go to another image
-      if (_current !== this.current) {
-        this.current = _current;
+      if (current !== this.current) {
+        this.current = current;
 
-        if (_current === 0) {
+        if (current === 0) {
 
           // No more images to the left
           this.canvas.style.cursor = 'e-resize';
-        } else if (_current === this.total - 1) {
+        } else if (current === this.total - 1) {
           this.canvas.style.cursor = 'w-resize';
         } else {
           this.canvas.style.cursor = 'ew-resize';
         }
 
         // Draw the new image
-        this.context.drawImage(this.images[_current], 0, 0, this.size.width, this.size.height);
+        this.drawImage(this.images[current], this.pos, this.size);
       }
     }
   }
@@ -219,16 +233,36 @@ class Whirl {
    */
   getScaledSize(image) {
     let ratio = image.width / image.height;
+    let size = {};
 
-    let height = this.size.height;
-    let width = height * ratio;
+    size.height = this.size.height;
+    size.width = size.height * ratio;
 
-    this.size.width = width;
-    this.size.height = height;
+    !this.size.width && this.setSize(size);
 
-    return {
-      width: width,
-      height: height,
+    !this.pos.x && this.setCentredPos();
+
+    return size;
+  }
+
+  /**
+   * Set image size
+   *
+   * @param {Object} size
+   * - Size to set w/ width and height
+   */
+  setSize(size = {}) {
+    this.size = size;
+  }
+
+  /**
+   * Calculate the centred position
+   * of the image in the window
+   */
+  setCentredPos() {
+    this.pos = {
+      x: window.innerWidth / 2 - this.size.width / 2,
+      y: window.innerHeight / 2 - this.size.height / 2,
     };
   }
 
@@ -318,7 +352,23 @@ class Whirl {
   insertImage(image) {
     let size = this.getScaledSize(image);
 
-    this.context.drawImage(image, 0, 0, size.width, size.height);
+    this.drawImage(image, this.pos, this.size);
+  }
+
+  /**
+   * Draw an image onto the canvas
+   *
+   * @param {Object} image
+   * - The image object to draw
+   *
+   * @param {Object} pos
+   * - Position coordinates x and y
+   *
+   * @param {Object} size
+   * - Width and height of the image
+   */
+  drawImage(image, pos, size) {
+    this.context.drawImage(image, pos.x, pos.y, size.width, size.height);
   }
 
   /**

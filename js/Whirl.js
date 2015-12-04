@@ -25,6 +25,8 @@ var Whirl = (function () {
 
     _classCallCheck(this, Whirl);
 
+    var children = undefined;
+
     // Inital values
     this.start = 0;
     this.total = 0;
@@ -67,10 +69,10 @@ var Whirl = (function () {
     // Add drop listener to the slider element
     this.zone.ondrop = this.drop.bind(this);
 
-    var children = this.zone.children;
-
     // Check for custom splash and/or loading elments
     if (this.zone.hasChildNodes) {
+      children = this.zone.children;
+
       for (var i = 0; i < children.length; i++) {
         if (this.zone.children[i].className === this.classes.loading) {
           this.loading = children[i];

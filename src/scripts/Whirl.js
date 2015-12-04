@@ -132,6 +132,8 @@ class Whirl {
    *
    * @param {Object} event
    * - drop event
+   *
+   * @return {Boolean}
    */
   drop(event) {
     event.preventDefault();
@@ -326,7 +328,7 @@ class Whirl {
       this.setSize(image);
 
       // Draw the original image into the canvas context
-      this.drawImage(image, this.pos, this.size, index);
+      this.drawImage(image, this.pos, this.size);
 
       // Image is larger than 2MB
       if (size >= 2e6) {
@@ -384,7 +386,7 @@ class Whirl {
       node.className = this.classes.splash;
       node.textContent = 'Drag & drop your images';
 
-      // Append into the slider element
+      // Append into the drop zone
       this.zone.appendChild(node);
 
       this.splash = node;
@@ -415,7 +417,7 @@ class Whirl {
       node.className = this.classes.loading;
       node.textContent = label;
 
-      // Append into the slider element
+      // Append into the drop zone
       this.zone.appendChild(node);
 
       this.loading = node;

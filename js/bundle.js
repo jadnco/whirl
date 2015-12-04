@@ -1,1 +1,0 @@
-"use strict";var zone=document.getElementById("zone"),whirl=new Whirl(zone);

@@ -35,9 +35,13 @@ var Whirl = (function () {
     this.min = 5;
     this.dragging = false;
     this.images = {};
+    this.pos = {
+      x: 0,
+      y: 0
+    };
     this.size = {
       width: 0,
-      height: window.innerHeight
+      height: 650
     };
 
     this.canvas = this.createCanvas();
@@ -100,23 +104,20 @@ var Whirl = (function () {
   _createClass(Whirl, [{
     key: 'createCanvas',
     value: function createCanvas() {
-      var canvas = this.canvas = document.createElement('canvas');
+      var canvas = document.createElement('canvas');
 
       return canvas;
     }
 
     /**
      * Insert the canvas into the DOM
-     *
-     * @param {Object} size
-     * - Width and height to make the canvas
      */
 
   }, {
     key: 'insertCanvas',
-    value: function insertCanvas(size) {
-      this.canvas.width = size.width;
-      this.canvas.height = size.height;
+    value: function insertCanvas() {
+      this.canvas.width = window.innerWidth;
+      this.canvas.height = window.innerHeight;
       this.canvas.style.cursor = 'ew-resize';
       this.canvas.hidden = true;
 
@@ -155,6 +156,8 @@ var Whirl = (function () {
      *
      * @param {Object} event
      * - drop event
+     *
+     * @return {Boolean}
      */
 
   }, {
@@ -210,58 +213,68 @@ var Whirl = (function () {
   }, {
     key: 'changeImage',
     value: function changeImage(event) {
-      var left = event.offsetX - event.target.offsetLeft;
-      var _current = undefined;
+      var left = event.offsetX - this.pos.x;
+      var current = undefined;
 
       if (this.dragging) {
 
         // Calculate the current position by scaling mouse position
-        _current = Math.floor(this.total * left / this.size.width);
+        current = Math.floor(this.total * left / this.size.width);
 
-        // Only redraw if we need to go to another image
-        if (_current !== this.current) {
-          this.current = _current;
+        // Cursor is over the left
+        if (current < this.start) {
+          current = this.total + current;
+        }
 
-          if (_current === 0) {
-
-            // No more images to the left
-            this.canvas.style.cursor = 'e-resize';
-          } else if (_current === this.total - 1) {
-            this.canvas.style.cursor = 'w-resize';
-          } else {
-            this.canvas.style.cursor = 'ew-resize';
+        // Cursor is over the right
+        else if (current >= this.total) {
+            current = (this.total - current) * -1;
           }
 
+        // Only redraw if we need to go to another image
+        if (current !== this.current) {
+          this.current = current;
+
           // Draw the new image
-          this.context.drawImage(this.images[_current], 0, 0, this.size.width, this.size.height);
+          this.drawImage(this.images[current], this.pos, this.size);
         }
       }
     }
 
     /**
-     * Scale the original image size to defined size
+     * Set image size
      *
-     * @param {Object} image
-     * - The original image
-     *
-     * @return {Object}
-     * - The scaled dimensions
+     * @param {Object} size
+     * - Size to set w/ width and height
      */
 
   }, {
-    key: 'getScaledSize',
-    value: function getScaledSize(image) {
+    key: 'setSize',
+    value: function setSize(image) {
       var ratio = image.width / image.height;
+      var size = {};
 
-      var height = this.size.height;
-      var width = height * ratio;
+      size.height = this.size.height;
+      size.width = size.height * ratio;
 
-      this.size.width = width;
-      this.size.height = height;
+      this.size.width = size.width;
 
-      return {
-        width: width,
-        height: height
+      !this.pos.x && this.setCentredPos();
+
+      return size;
+    }
+
+    /**
+     * Calculate the centred position
+     * of the image in the window
+     */
+
+  }, {
+    key: 'setCentredPos',
+    value: function setCentredPos() {
+      this.pos = {
+        x: window.innerWidth / 2 - this.size.width / 2,
+        y: window.innerHeight / 2 - this.size.height / 2
       };
     }
 
@@ -276,7 +289,32 @@ var Whirl = (function () {
   }, {
     key: 'getScaledImage',
     value: function getScaledImage() {
-      return this.canvas.toDataURL();
+      var pos = this.pos;
+      var size = this.size;
+      var url = undefined;
+
+      // Get the drawn image
+      var data = this.context.getImageData(pos.x, pos.y, size.width, size.height);
+
+      // Original canvas size
+      var canvas = {
+        width: this.canvas.width,
+        height: this.canvas.height
+      };
+
+      // Change canvas size to image size
+      this.canvas.width = this.size.width;
+      this.canvas.height = this.size.height;
+
+      this.context.putImageData(data, 0, 0);
+
+      url = this.canvas.toDataURL();
+
+      // Set back to original
+      this.canvas.width = canvas.width;
+      this.canvas.height = canvas.height;
+
+      return url;
     }
 
     /**
@@ -297,9 +335,9 @@ var Whirl = (function () {
 
       var image = new Image();
       var scaled = new Image();
-      var added = undefined;
 
       var add = function add(img, _scaled) {
+        var added = undefined;
 
         if (_scaled) {
           scaled.width = image.width;
@@ -319,17 +357,22 @@ var Whirl = (function () {
           _this2.hideLoading();
           _this2.hideZone();
 
+          // Draw the first image
+          _this2.drawImage(_this2.images[0], _this2.pos, _this2.size);
+
           return;
         }
       };
 
       image.onload = function () {
 
-        // Insert the canvas, based on image dimensions
-        _this2.insertCanvas(_this2.getScaledSize(image));
+        // Insert the canvas
+        _this2.insertCanvas();
 
-        // Insert the original image into the canvas context
-        _this2.insertImage(image);
+        _this2.setSize(image);
+
+        // Draw the original image into the canvas context
+        _this2.drawImage(image, _this2.pos, _this2.size);
 
         // Image is larger than 2MB
         if (size >= 2e6) {
@@ -351,18 +394,22 @@ var Whirl = (function () {
     }
 
     /**
-     * Draw the scaled image into the canvas
+     * Draw an image onto the canvas
      *
      * @param {Object} image
-     * - The original image
+     * - The image object to draw
+     *
+     * @param {Object} pos
+     * - Position coordinates x and y
+     *
+     * @param {Object} size
+     * - Width and height of the image
      */
 
   }, {
-    key: 'insertImage',
-    value: function insertImage(image) {
-      var size = this.getScaledSize(image);
-
-      this.context.drawImage(image, 0, 0, size.width, size.height);
+    key: 'drawImage',
+    value: function drawImage(image, pos, size) {
+      this.context.drawImage(image, pos.x, pos.y, size.width, size.height);
     }
 
     /**
@@ -392,7 +439,7 @@ var Whirl = (function () {
         node.className = this.classes.splash;
         node.textContent = 'Drag & drop your images';
 
-        // Append into the slider element
+        // Append into the drop zone
         this.zone.appendChild(node);
 
         this.splash = node;
@@ -429,7 +476,7 @@ var Whirl = (function () {
         node.className = this.classes.loading;
         node.textContent = label;
 
-        // Append into the slider element
+        // Append into the drop zone
         this.zone.appendChild(node);
 
         this.loading = node;

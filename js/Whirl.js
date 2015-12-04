@@ -236,7 +236,7 @@ var Whirl = (function () {
           this.current = current;
 
           // Draw the new image
-          this.drawImage(this.images[current], this.pos, this.size);
+          this.images[current] && this.drawImage(this.images[current], this.pos, this.size);
         }
       }
     }

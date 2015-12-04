@@ -93,13 +93,10 @@ class Whirl {
 
   /**
    * Insert the canvas into the DOM
-   *
-   * @param {Object} size
-   * - Width and height to make the canvas
    */
-  insertCanvas(size) {
-    this.canvas.width = window.innerWidth;//size.width;
-    this.canvas.height = window.innerHeight;//size.height;
+  insertCanvas() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
     this.canvas.style.cursor = 'ew-resize';
     this.canvas.hidden = true;
 
@@ -206,43 +203,10 @@ class Whirl {
       if (current !== this.current) {
         this.current = current;
 
-        if (current === 0) {
-
-          // No more images to the left
-          this.canvas.style.cursor = 'e-resize';
-        } else if (current === this.total - 1) {
-          this.canvas.style.cursor = 'w-resize';
-        } else {
-          this.canvas.style.cursor = 'ew-resize';
-        }
-
         // Draw the new image
         this.drawImage(this.images[current], this.pos, this.size);
       }
     }
-  }
-
-  /**
-   * Scale the original image size to defined size
-   *
-   * @param {Object} image
-   * - The original image
-   *
-   * @return {Object}
-   * - The scaled dimensions
-   */
-  getScaledSize(image) {
-    let ratio = image.width / image.height;
-    let size = {};
-
-    size.height = this.size.height;
-    size.width = size.height * ratio;
-
-    !this.size.width && this.setSize(size);
-
-    !this.pos.x && this.setCentredPos();
-
-    return size;
   }
 
   /**
@@ -251,8 +215,18 @@ class Whirl {
    * @param {Object} size
    * - Size to set w/ width and height
    */
-  setSize(size = {}) {
-    this.size = size;
+  setSize(image) {
+    let ratio = image.width / image.height;
+    let size = {};
+
+    size.height = this.size.height;
+    size.width = size.height * ratio;
+
+    this.size.width = size.width;
+
+    !this.pos.x && this.setCentredPos();
+
+    return size;
   }
 
   /**
@@ -274,7 +248,32 @@ class Whirl {
    * - The DataURI of the new scaled image
    */
   getScaledImage() {
-    return this.canvas.toDataURL();
+    let pos = this.pos;
+    let size = this.size;
+    let url;
+
+    // Get the drawn image
+    let data = this.context.getImageData(pos.x, pos.y, size.width, size.height);
+
+    // Original canvas size
+    let canvas = {
+      width: this.canvas.width,
+      height: this.canvas.height,
+    };
+
+    // Change canvas size to image size
+    this.canvas.width = this.size.width;
+    this.canvas.height = this.size.height;
+
+    this.context.putImageData(data, 0, 0);
+
+    url = this.canvas.toDataURL();
+
+    // Set back to original
+    this.canvas.width = canvas.width;
+    this.canvas.height = canvas.height;
+
+    return url;
   }
 
   /**
@@ -290,9 +289,9 @@ class Whirl {
   loadImage(reader, index, size) {
     let image = new Image();
     let scaled = new Image();
-    let added;
 
     let add = (img, _scaled) => {
+      let added;
 
       if (_scaled) {
         scaled.width = image.width;
@@ -312,17 +311,22 @@ class Whirl {
         this.hideLoading();
         this.hideZone();
 
+        // Draw the first image
+        this.drawImage(this.images[0], this.pos, this.size);
+
         return;
       }
     };
 
     image.onload = () => {
 
-      // Insert the canvas, based on image dimensions
-      this.insertCanvas(this.getScaledSize(image));
+      // Insert the canvas
+      this.insertCanvas();
 
-      // Insert the original image into the canvas context
-      this.insertImage(image);
+      this.setSize(image);
+
+      // Draw the original image into the canvas context
+      this.drawImage(image, this.pos, this.size, index);
 
       // Image is larger than 2MB
       if (size >= 2e6) {
@@ -344,18 +348,6 @@ class Whirl {
   }
 
   /**
-   * Draw the scaled image into the canvas
-   *
-   * @param {Object} image
-   * - The original image
-   */
-  insertImage(image) {
-    let size = this.getScaledSize(image);
-
-    this.drawImage(image, this.pos, this.size);
-  }
-
-  /**
    * Draw an image onto the canvas
    *
    * @param {Object} image
@@ -367,7 +359,7 @@ class Whirl {
    * @param {Object} size
    * - Width and height of the image
    */
-  drawImage(image, pos, size) {
+  drawImage(image, pos, size, index) {
     this.context.drawImage(image, pos.x, pos.y, size.width, size.height);
   }
 

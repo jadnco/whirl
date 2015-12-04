@@ -51,7 +51,7 @@ class Whirl {
     this.zone.ondragleave = this.drag;
 
     // Add drop listener to the slider element
-    this.zone.ondrop = () => this.drop();
+    this.zone.ondrop = this.drop.bind(this);
 
     let children = this.zone.children;
 
@@ -112,7 +112,7 @@ class Whirl {
    * @return {Boolean}
    */
   drag(event) {
-    event.preventDefault && event.preventDefault();
+    event.preventDefault();
 
     let classes = event.target.classList;
 
@@ -129,12 +129,10 @@ class Whirl {
    * Reads the dropped files
    *
    * @param {Object} event
-   * - mouse event
+   * - drop event
    */
   drop(event) {
-    event = event || window.event;
-
-    event.preventDefault && event.preventDefault();
+    event.preventDefault();
 
     // Don't allow any images to be added after the initial drop
     if (this.total > 0) {
@@ -155,8 +153,6 @@ class Whirl {
       this.total = 0;
       files = null;
 
-      event = null;
-
       return alert('You need to select at least 5 images.');
     }
 
@@ -170,8 +166,10 @@ class Whirl {
 
       reader.readAsDataURL(file);
 
-      reader.onloadend = this.loadImage.bind(this, reader, i);
+      reader.onloadend = this.loadImage.bind(this, reader, i, file.size);
     }
+
+    return false;
   }
 
   /**
@@ -254,10 +252,34 @@ class Whirl {
    * @param {Integer} index
    * - Current index relative to all files
    */
-  loadImage(reader, index) {
+  loadImage(reader, index, size) {
     let image = new Image();
     let scaled = new Image();
     let added;
+
+    let add = (img, _scaled) => {
+
+      if (_scaled) {
+        scaled.width = image.width;
+        scaled.height = image.height;
+      }
+
+      this.images[index] = img;
+
+      added = Object.keys(this.images).length;
+
+      // Remove active class from drag element
+      this.zone.classList.remove('drag-active');
+
+      // The last image
+      if (added === this.total) {
+        this.canvas.hidden = false;
+        this.hideLoading();
+        this.hideZone();
+
+        return;
+      }
+    };
 
     image.onload = () => {
 
@@ -267,33 +289,23 @@ class Whirl {
       // Insert the original image into the canvas context
       this.insertImage(image);
 
-      scaled.onload = () => {
+      // Image is larger than 2MB
+      if (size >= 2e6) {
 
-        // scaled.name = file.name;
-        scaled.width = image.width;
-        scaled.height = image.height;
+        scaled.onload = () => {
+          add(scaled, true);
+        };
 
-        this.images[index] = scaled;
+        scaled.src = this.getScaledImage();
+      } else {
 
-        added = Object.keys(this.images).length;
-
-        // The last image
-        if (added === this.total) {
-          this.canvas.hidden = false;
-          this.hideLoading();
-          this.hideZone();
-        }
-
-        // Remove active class from drag element
-        this.zone.classList.remove('drag-active');
-      };
-
-      scaled.src = this.getScaledImage();
+        add(image);
+      }
     };
 
     image.src = reader.result;
 
-    if (image.complete || image.readyState === 4) image.onload();
+    if (image.complete && image.readyState === 4) image.onload();
   }
 
   /**

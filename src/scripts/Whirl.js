@@ -14,6 +14,7 @@ class Whirl {
    * - The drop zone html element
    */
   constructor(zone = {}) {
+    let children;
 
     // Inital values
     this.start = 0;
@@ -53,10 +54,10 @@ class Whirl {
     // Add drop listener to the slider element
     this.zone.ondrop = this.drop.bind(this);
 
-    let children = this.zone.children;
-
     // Check for custom splash and/or loading elments
     if (this.zone.hasChildNodes) {
+      children = this.zone.children;
+
       for (let i = 0; i < children.length; i++) {
         if (this.zone.children[i].className === this.classes.loading) {
           this.loading = children[i];
@@ -364,7 +365,7 @@ class Whirl {
     let node;
     let percentNode;
 
-    let label = `Loading...`;
+    let label = 'Loading...';
 
     if (!this.loading) {
       node = document.createElement('div');

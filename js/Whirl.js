@@ -29,12 +29,13 @@ var Whirl = (function () {
     this.start = 0;
     this.total = 0;
     this.current = 0;
+    this.added = 0;
     this.min = 5;
     this.dragging = false;
     this.images = {};
     this.size = {
       width: 0,
-      height: window.outerHeight
+      height: window.innerHeight
     };
 
     this.canvas = this.createCanvas();
@@ -64,9 +65,7 @@ var Whirl = (function () {
     this.zone.ondragleave = this.drag;
 
     // Add drop listener to the slider element
-    this.zone.ondrop = function () {
-      return _this.drop();
-    };
+    this.zone.ondrop = this.drop.bind(this);
 
     var children = this.zone.children;
 
@@ -136,7 +135,7 @@ var Whirl = (function () {
   }, {
     key: 'drag',
     value: function drag(event) {
-      event.preventDefault && event.preventDefault();
+      event.preventDefault();
 
       var classes = event.target.classList;
 
@@ -153,15 +152,13 @@ var Whirl = (function () {
      * Reads the dropped files
      *
      * @param {Object} event
-     * - mouse event
+     * - drop event
      */
 
   }, {
     key: 'drop',
     value: function drop(event) {
-      event = event || window.event;
-
-      event.preventDefault && event.preventDefault();
+      event.preventDefault();
 
       // Don't allow any images to be added after the initial drop
       if (this.total > 0) {
@@ -182,8 +179,6 @@ var Whirl = (function () {
         this.total = 0;
         files = null;
 
-        event = null;
-
         return alert('You need to select at least 5 images.');
       }
 
@@ -197,8 +192,10 @@ var Whirl = (function () {
 
         reader.readAsDataURL(file);
 
-        reader.onloadend = this.loadImage.bind(this, reader, i);
+        reader.onloadend = this.loadImage.bind(this, reader, i, file.size);
       }
+
+      return false;
     }
 
     /**
@@ -293,11 +290,36 @@ var Whirl = (function () {
 
   }, {
     key: 'loadImage',
-    value: function loadImage(reader, index) {
+    value: function loadImage(reader, index, size) {
       var _this2 = this;
 
       var image = new Image();
       var scaled = new Image();
+      var added = undefined;
+
+      var add = function add(img, _scaled) {
+
+        if (_scaled) {
+          scaled.width = image.width;
+          scaled.height = image.height;
+        }
+
+        _this2.images[index] = img;
+
+        added = Object.keys(_this2.images).length;
+
+        // Remove active class from drag element
+        _this2.zone.classList.remove('drag-active');
+
+        // The last image
+        if (added === _this2.total) {
+          _this2.canvas.hidden = false;
+          _this2.hideLoading();
+          _this2.hideZone();
+
+          return;
+        }
+      };
 
       image.onload = function () {
 
@@ -307,34 +329,23 @@ var Whirl = (function () {
         // Insert the original image into the canvas context
         _this2.insertImage(image);
 
-        scaled.onload = function () {
+        // Image is larger than 2MB
+        if (size >= 2e6) {
 
-          // scaled.name = file.name;
-          scaled.width = image.width;
-          scaled.height = image.height;
+          scaled.onload = function () {
+            add(scaled, true);
+          };
 
-          _this2.images[index] = scaled;
+          scaled.src = _this2.getScaledImage();
+        } else {
 
-          // On the last image
-          if (index === _this2.total - 1) {
-            _this2.canvas.hidden = false;
-
-            // hide the loading screen
-            _this2.hideLoading();
-
-            _this2.hideZone();
-          }
-
-          // Remove active class from drag element
-          _this2.zone.classList.remove('drag-active');
-        };
-
-        scaled.src = _this2.getScaledImage();
+          add(image);
+        }
       };
 
       image.src = reader.result;
 
-      if (image.complete || image.readyState === 4) image.onload();
+      if (image.complete && image.readyState === 4) image.onload();
     }
 
     /**
@@ -406,12 +417,15 @@ var Whirl = (function () {
     key: 'showLoading',
     value: function showLoading() {
       var node = undefined;
+      var percentNode = undefined;
+
+      var label = 'Loading...';
 
       if (!this.loading) {
         node = document.createElement('div');
 
         node.className = this.classes.loading;
-        node.textContent = 'Loading...';
+        node.textContent = label;
 
         // Append into the slider element
         this.zone.appendChild(node);

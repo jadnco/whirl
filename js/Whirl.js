@@ -409,6 +409,7 @@ var Whirl = (function () {
   }, {
     key: 'drawImage',
     value: function drawImage(image, pos, size) {
+      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.context.drawImage(image, pos.x, pos.y, size.width, size.height);
     }
 

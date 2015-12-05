@@ -6,7 +6,7 @@ An ES6 script that lets you scrub through a dropped in list of sequential images
 
 ## Getting Started
 
-Whirl is written in ES6, so before running in a browser you'll need to pipe it through your favourite transpiler. If you don't want to go through that hassle, you can get the transpiled version in [`gh-pages`](/tree/gh-pages).
+Whirl is written in ES6, so before running in a browser you'll need to pipe it through your favourite transpiler. If you don't want to go through that hassle, you can get the transpiled version in [`gh-pages`](https://github.com/jadnco/whirl/tree/gh-pages).
 
 After doing so, create an element that will be used as a drop-zone and reference the script just before the end of the `body` tag:
 
@@ -21,9 +21,9 @@ After doing so, create an element that will be used as a drop-zone and reference
 Once the script is referenced, you can create a new instance and pass in the drop-zone element as the only parameter:
 
 ```js
-  var zone = document.getElementById('zone');
+var zone = document.getElementById('zone');
 
-  var whirl = new Whirl(zone);
+var whirl = new Whirl(zone);
 ```
 
 ## Options

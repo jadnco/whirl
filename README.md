@@ -1,43 +1,42 @@
-# Whirl [![forthebadge](http://forthebadge.com/images/badges/uses-badges.svg)](http://forthebadge.com)
+# Whirl
 
-### Getting Started
+[![forthebadge](http://forthebadge.com/images/badges/uses-badges.svg)](http://forthebadge.com)
 
-Clone the repo using `git clone` or by clicking the *Download ZIP* button to the right.
+An ES6 script that lets you scrub through a dropped in list of sequential images. This works particularly well for 360° rotating product images.
 
-```sh
-git clone https://github.com/jadnco/boilerplate.git
+## Getting Started
+
+Whirl is written in ES6, so before running in a browser you'll need to pipe it through your favourite transpiler. If you don't want to go through that hassle, you can get the transpiled version in `[gh-pages](https://github.com/jadnco/whirl/tree/gh-pages)`.
+
+After doing so, create an element that will be used as a drop-zone and reference the script just before the end of the `body` tag:
+
+```html
+    <div id="zone"></div>
+
+    <script src="Whirl.js"></script>
+  </body>
+</html>
 ```
 
-Navigate to the directory to where it was cloned.
+Once the script is referenced, you can create a new instance and pass in the drop-zone element as the only parameter:
 
-```sh
-cd boilerplate
+```js
+  var zone = document.getElementById('zone');
+
+  var whirl = new Whirl(zone);
 ```
 
-Install all dependencies using npm:
+## Options
 
-```sh
-npm install
+Whirl automatically inserts three nodes into the DOM: `div.whirl-splash` & `div.whirl-loading` into the `zone` and `canvas` into the `body`. You have the option to create custom `splash` and `loading` elements by manually putting them inside the `zone` element:
+
+```html
+<div id="zone">
+  <div class="whirl-loading">A custom loading element</div>
+  <div class="whirl-splash">A custom splash element</div>
+</div>
 ```
 
-Run the default Gulp task to get started:
+## Demo
 
-```sh
-gulp
-```
-
-BrowserSync will automagically inject any changes you make to the stylesheets. You can view the website at one of the given access URLs:
-
-```sh
-[BS] Access URLs:
- ----------------------------------
-       Local: http://localhost:3000
-    External: http://10.0.X.XX:3000
- ----------------------------------
-```
-
-If you are working within a GitHub repo you can deploy your project, at any time, to a `gh-pages` branch by running:
-
-```sh
-gulp deploy
-```
+To see a working demo, head over to [jaden.io/whirl](http://jaden.io/whirl) and drop in a list of sequential images.

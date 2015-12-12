@@ -80,7 +80,7 @@ class Whirl {
   }
 
   /**
-   * Creat the canvas element
+   * Create the canvas element
    *
    * @return {Object}
    * - Referece to the canvas element
@@ -177,7 +177,7 @@ class Whirl {
   }
 
   /**
-   * Draw the next or previos image
+   * Draw the next or previous image
    *
    * @param {Object} event
    * - the mouse event

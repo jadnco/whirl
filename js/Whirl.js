@@ -5,11 +5,11 @@
 
 'use strict';
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Whirl = (function () {
+var Whirl = function () {
 
   /**
    * Sets all property defaults, custom values
@@ -17,22 +17,21 @@ var Whirl = (function () {
    * @param {Object} zone
    * - The drop zone html element
    */
-
   function Whirl() {
     var _this = this;
 
-    var zone = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var zone = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     _classCallCheck(this, Whirl);
 
-    var children = undefined;
+    var children = void 0;
 
     // Inital values
     this.start = 0;
     this.total = 0;
     this.current = 0;
     this.added = 0;
-    this.min = 5;
+    this.min = 3;
     this.dragging = false;
     this.images = {};
     this.pos = {
@@ -95,11 +94,12 @@ var Whirl = (function () {
   }
 
   /**
-   * Creat the canvas element
+   * Create the canvas element
    *
    * @return {Object}
    * - Referece to the canvas element
    */
+
 
   _createClass(Whirl, [{
     key: 'createCanvas',
@@ -173,8 +173,8 @@ var Whirl = (function () {
       // Get the array of files that were dropped in
       var files = event.dataTransfer.files;
 
-      var file = undefined;
-      var reader = undefined;
+      var file = void 0;
+      var reader = void 0;
 
       this.total = files.length;
 
@@ -204,7 +204,7 @@ var Whirl = (function () {
     }
 
     /**
-     * Draw the next or previos image
+     * Draw the next or previous image
      *
      * @param {Object} event
      * - the mouse event
@@ -214,7 +214,7 @@ var Whirl = (function () {
     key: 'changeImage',
     value: function changeImage(event) {
       var left = event.offsetX - this.pos.x;
-      var current = undefined;
+      var current = void 0;
 
       if (this.dragging) {
 
@@ -291,7 +291,7 @@ var Whirl = (function () {
     value: function getScaledImage() {
       var pos = this.pos;
       var size = this.size;
-      var url = undefined;
+      var url = void 0;
 
       // Get the drawn image
       var data = this.context.getImageData(pos.x, pos.y, size.width, size.height);
@@ -337,7 +337,7 @@ var Whirl = (function () {
       var scaled = new Image();
 
       var add = function add(img, _scaled) {
-        var added = undefined;
+        var added = void 0;
 
         if (_scaled) {
           scaled.width = image.width;
@@ -430,7 +430,7 @@ var Whirl = (function () {
   }, {
     key: 'showSplash',
     value: function showSplash() {
-      var node = undefined;
+      var node = void 0;
 
       // Custom splash element wasn't found
       // so create a default one
@@ -466,8 +466,8 @@ var Whirl = (function () {
   }, {
     key: 'showLoading',
     value: function showLoading() {
-      var node = undefined;
-      var percentNode = undefined;
+      var node = void 0;
+      var percentNode = void 0;
 
       var label = 'Loading...';
 
@@ -500,4 +500,4 @@ var Whirl = (function () {
   }]);
 
   return Whirl;
-})();
+}();

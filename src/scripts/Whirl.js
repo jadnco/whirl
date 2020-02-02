@@ -21,7 +21,7 @@ class Whirl {
     this.total = 0;
     this.current = 0;
     this.added = 0;
-    this.min = 5;
+    this.min = 3;
     this.dragging = false;
     this.images = {};
     this.pos = {
